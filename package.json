@@ -4,7 +4,7 @@
   "description": "Learning Node js and mongodbn",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon server.js"
   },
   "keywords": [],
   "author": "",

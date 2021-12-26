@@ -1,8 +1,31 @@
 const fs = require('fs');
+const express = require('express');
+
+//define route methods to export
 
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
+
+exports.checkBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price) {
+    res
+      .status(400)
+      .json({ status: 'Bad Request', message: 'Name or Price not found' });
+  }
+  next();
+};
+
+//this ensures that all request which id is not defined will get the error
+exports.checkId = (req, res, next, val) => {
+  const id = req.params.id * 1;
+  const tour = tours.find((item) => item.id === id);
+
+  if (!tour) {
+    return res.status(404).json({ Status: 'Not Found', message: 'Invalid ID' });
+  }
+  next();
+};
 
 exports.getTours = (req, res) => {
   res.status(200).json({
@@ -37,9 +60,6 @@ exports.postTours = (req, res) => {
 exports.getTour = (req, res) => {
   const id = req.params.id * 1;
   const tour = tours.find((item) => item.id === id);
-
-  if (!tour)
-    return res.status(404).json({ Status: 'Not Found', message: 'Invalid ID' });
 
   res.status(200).json({
     status: 'success',

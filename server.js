@@ -41,6 +41,17 @@ const tourSchema = new mongoose.Schema({
 //2) Then define a modal (use first upper case - usual convention)
 const Tour = mongoose.model('Tour', tourSchema);
 
+//create new tour document
+const testTour = new Tour({
+  name: 'The new Forest Hiker',
+  rating: 6.7,
+  price: 100,
+});
+
+testTour
+  .save()
+  .then((res) => console.log(res))
+  .catch((err) => console.log(err));
 
 const port = process.env.PORT;
 app.listen(port, () => {

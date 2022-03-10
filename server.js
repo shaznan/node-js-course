@@ -17,7 +17,7 @@ mongoose
     useCreateIndex: true,
     useFindAndModify: true,
   })
-  .then((connection) => console.log('Connection was successful!'))
+  .then((connection) => console.log('Connection was successful'))
   .catch((err) => console.log('Connection to the server failed'));
 
 //1) First define a schema
@@ -40,6 +40,7 @@ const tourSchema = new mongoose.Schema({
 
 //2) Then define a modal (use first upper case - usual convention)
 const Tour = mongoose.model('Tour', tourSchema);
+
 
 const port = process.env.PORT;
 app.listen(port, () => {

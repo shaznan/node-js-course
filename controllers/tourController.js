@@ -10,7 +10,7 @@ const tour = require('../Modals/tourModals');
 exports.createTour = async (req, res) => {
   try {
     //Tour.create saves in the DB
-    const newTour = await Tour.create(req.body);
+    const newTour = await tour.create(req.body);
     res.status(201).json({
       status: 'success',
       data: {
@@ -25,15 +25,23 @@ exports.createTour = async (req, res) => {
   }
 };
 
-exports.getTours = (req, res) => {
-  res.status(200).json({
-    // status: 'success',
-    // results: tours.length,
-    // requestedAt: req.requestTime,
-    // data: {
-    //   tours,
-    // },
-  });
+exports.getTours = async (req, res) => {
+  try {
+    const Tours = await tour.find();
+    res.status(200).json({
+      status: 'success',
+      results: Tours.length,
+      requestedAt: req.requestTime,
+      data: {
+        Tours,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'failed',
+      message: err,
+    });
+  }
 };
 
 exports.postTours = (req, res) => {

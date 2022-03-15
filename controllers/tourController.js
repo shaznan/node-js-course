@@ -3,10 +3,6 @@ const tour = require('../Modals/tourModals');
 
 //define route methods to export
 
-// const tours = JSON.parse(
-//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
-// );
-
 exports.createTour = async (req, res) => {
   try {
     //Tour.create saves in the DB
@@ -26,6 +22,7 @@ exports.createTour = async (req, res) => {
 };
 
 exports.getTours = async (req, res) => {
+  console.log('hit');
   try {
     const Tours = await tour.find();
     res.status(200).json({
@@ -62,23 +59,43 @@ exports.postTours = (req, res) => {
   // );
 };
 
-exports.getTour = (req, res) => {
-  // const id = req.params.id * 1;
-  // const tour = tours.find((item) => item.id === id);
-  // res.status(200).json({
-  //   status: 'success',
-  //   results: tours.length,
-  //   data: {
-  //     tour,
-  //   },
-  // });
+exports.getTour = async (req, res) => {
+  console.log(req.params.id);
+  try {
+    //findById is a mongoose shortcut for tour.findOne({_id: req.params.id})
+    const Tour = await tour.findById(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      results: Tour.length,
+      data: {
+        Tour,
+      },
+    });
+  } catch (err) {
+    res.send(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
-exports.patchTours = (req, res) => {
-  res.status(201).json({
-    message: 'Patch complete',
-    data: {
-      data: 'some patch data',
-    },
-  });
+exports.updateTours = async (req, res) => {
+  //findByIdAndUpdate => shortcut for findOneAndUpdate
+  //req.body => payload of what has to be updated
+  //patch only updates one key value pair, if put we cannot use this implementation
+  try {
+    const updatedTour = await tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    res.status(200).json({
+      status: 'success',
+      data: { tour: updatedTour },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };

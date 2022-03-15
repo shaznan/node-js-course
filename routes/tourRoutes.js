@@ -10,6 +10,6 @@ router.route('/').get(tourController.getTours).post(tourController.createTour);
 router
   .route('/:id')
   .get(tourController.getTour)
-  .patch(tourController.patchTours);
+  .patch(tourController.updateTours);
 
 module.exports = router;

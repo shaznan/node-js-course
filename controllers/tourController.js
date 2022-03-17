@@ -29,15 +29,15 @@ exports.getTours = async (req, res) => {
   // find().where('duration).equals(5).where('difficulty).equals('easy')
   try {
     //BUILD QUERY
-    //1) Filtering
-    //1A) Filtering
+    // * 1) Filtering
+    // ? 1A) Filtering
     //`````remove unwanted params from req.query
     const queryObj = { ...req.query };
     const excludeFeilds = ['page', 'sort', 'limit', 'feilds'];
     excludeFeilds.forEach((item) => delete queryObj[item]);
     //````
 
-    //1B) Advance Filtering
+    // ? 1B) Advance Filtering
     // Adding advance filtering for ur params such as 127.0.0.1:8000/api/v1/tours?duration[gte]=5&difficulty=easy ([gte]) greater than eqial
     // when u log req.query you get {difficulty: easy, duration: {gte:5}}
     //but what mongoDB expects is to have $ sign before gte {difficulty: easy, duration: {$gte:5}}
@@ -47,12 +47,12 @@ exports.getTours = async (req, res) => {
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
     let query = tour.find(JSON.parse(queryStr));
-    //2) a) Sorting (normal)
+
+    // * 2) a) Sorting (normal)
     //127.0.0.1:8000/api/v1/tours?sort=price (Ascending)
     //127.0.0.1:8000/api/v1/tours?sort=-price (Descending => "-" before the value)
-
     if (req.query.sort) {
-      //b) sorting normal and adding more specifics (scenario 2 obj same value)
+      // ? b) sorting normal and adding more specifics (scenario 2 obj same value)
       //here req.query.sort = price, so query.sort('price'), sorts by price
       //if we r sorting by some value, say price, and there are 2 obj with same price, we pass muliple feilds to sort accordingly
       //127.0.0.1:8000/api/v1/tours?sort=price,ratingsAverage (Ascending)
@@ -68,8 +68,21 @@ exports.getTours = async (req, res) => {
       query = query.sort('-createdAt');
     }
 
+    // * 3) Feild Limiting aka projecting (limiting what propertise we get from the obj)
+    //127.0.0.1:8000/api/v1/tours?fields=name,duration,difficulty,price
+    if (req.query.fields) {
+      //mongodb expects something like query.select)('name price duration') with spaces
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+      console.log(query);
+    } else {
+      //return every item exept the version number, include a '-' in front
+      query = query.sort('-__v');
+    }
+
     //EXECUTE QUERY
     const Tours = await query;
+    console.log(Tours);
     res.status(200).json({
       status: 'success',
       results: Tours.length,

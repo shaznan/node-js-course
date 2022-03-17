@@ -22,9 +22,22 @@ exports.createTour = async (req, res) => {
 };
 
 exports.getTours = async (req, res) => {
-  console.log('hit');
+  // console.log(req.query);
+  // 1) normal filter way using params
+  // find({ duration: 5, difficulty: 'easy' });
+  //2) filter way using mongoose methods
+  // find().where('duration).equals(5).where('difficulty).equals('easy')
   try {
-    const Tours = await tour.find();
+    //`````remove unwanted params from req.query
+    const queryObj = { ...req.query };
+    const excludeFeilds = ['page', 'sort', 'limit', 'feilds'];
+    excludeFeilds.forEach((item) => delete queryObj(item));
+    //````
+
+    //BUILD QUERY
+    const query = Tour.find(queryObj)
+    //EXECUTE QUERY
+    const Tours = await query
     res.status(200).json({
       status: 'success',
       results: Tours.length,
@@ -41,23 +54,6 @@ exports.getTours = async (req, res) => {
   }
 };
 
-exports.postTours = (req, res) => {
-  // const newId = tours[tours.length - 1].id + 1;
-  // const newTours = Object.assign({ id: newId }, req.body);
-  // tours.push(newTours);
-  // fs.writeFile(
-  //   `${__dirname}/../dev-data/data/tours-simple.json`,
-  //   JSON.stringify(tours),
-  //   (err) => {
-  //     res.status(200).json({
-  //       status: 'success',
-  //       data: {
-  //         tours: newTours,
-  //       },
-  //     });
-  //   }
-  // );
-};
 
 exports.getTour = async (req, res) => {
   console.log(req.params.id);

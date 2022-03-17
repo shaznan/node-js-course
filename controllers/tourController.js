@@ -28,16 +28,26 @@ exports.getTours = async (req, res) => {
   //2) filter way using mongoose methods
   // find().where('duration).equals(5).where('difficulty).equals('easy')
   try {
+    //BUILD QUERY
+    //1) Filtering
     //`````remove unwanted params from req.query
     const queryObj = { ...req.query };
     const excludeFeilds = ['page', 'sort', 'limit', 'feilds'];
-    excludeFeilds.forEach((item) => delete queryObj(item));
+    excludeFeilds.forEach((item) => delete queryObj[item]);
     //````
 
-    //BUILD QUERY
-    const query = Tour.find(queryObj)
+    //2) Advance Filtering
+    // Adding advance filtering for ur params such as 127.0.0.1:8000/api/v1/tours?duration[gte]=5&difficulty=easy ([gte]) greater than eqial
+    // when u log req.query you get {difficulty: easy, duration: {gte:5}}
+    //but what mongoDB expects is to have $ sign before gte {difficulty: easy, duration: {$gte:5}}
+
+    //so we replace all mongodb operators with a $ sign in front of it
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+    const query = tour.find(JSON.parse(queryStr));
     //EXECUTE QUERY
-    const Tours = await query
+    const Tours = await query;
     res.status(200).json({
       status: 'success',
       results: Tours.length,
@@ -53,7 +63,6 @@ exports.getTours = async (req, res) => {
     });
   }
 };
-
 
 exports.getTour = async (req, res) => {
   console.log(req.params.id);

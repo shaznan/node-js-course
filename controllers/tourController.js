@@ -30,13 +30,14 @@ exports.getTours = async (req, res) => {
   try {
     //BUILD QUERY
     //1) Filtering
+    //1A) Filtering
     //`````remove unwanted params from req.query
     const queryObj = { ...req.query };
     const excludeFeilds = ['page', 'sort', 'limit', 'feilds'];
     excludeFeilds.forEach((item) => delete queryObj[item]);
     //````
 
-    //2) Advance Filtering
+    //1B) Advance Filtering
     // Adding advance filtering for ur params such as 127.0.0.1:8000/api/v1/tours?duration[gte]=5&difficulty=easy ([gte]) greater than eqial
     // when u log req.query you get {difficulty: easy, duration: {gte:5}}
     //but what mongoDB expects is to have $ sign before gte {difficulty: easy, duration: {$gte:5}}
@@ -45,7 +46,28 @@ exports.getTours = async (req, res) => {
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    const query = tour.find(JSON.parse(queryStr));
+    let query = tour.find(JSON.parse(queryStr));
+    //2) a) Sorting (normal)
+    //127.0.0.1:8000/api/v1/tours?sort=price (Ascending)
+    //127.0.0.1:8000/api/v1/tours?sort=-price (Descending => "-" before the value)
+
+    if (req.query.sort) {
+      //b) sorting normal and adding more specifics (scenario 2 obj same value)
+      //here req.query.sort = price, so query.sort('price'), sorts by price
+      //if we r sorting by some value, say price, and there are 2 obj with same price, we pass muliple feilds to sort accordingly
+      //127.0.0.1:8000/api/v1/tours?sort=price,ratingsAverage (Ascending)
+      //127.0.0.1:8000/api/v1/tours?sort=price,-ratingsAverage (Descending)
+      //remove the comma from the query and replace with space coz mongoose accepts it this way => sort('price ratingAverage)
+      const sortBy = req.query.sort.split(',').join(' ');
+
+      // query = query.sort(req.query.sort) (sorting normal)
+      //sorting by scenario b
+      query = query.sort(sortBy);
+    } else {
+      //other wise sort by newest created time
+      query = query.sort('-createdAt');
+    }
+
     //EXECUTE QUERY
     const Tours = await query;
     res.status(200).json({
@@ -63,7 +85,6 @@ exports.getTours = async (req, res) => {
     });
   }
 };
-
 exports.getTour = async (req, res) => {
   console.log(req.params.id);
   try {

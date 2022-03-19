@@ -21,6 +21,18 @@ exports.createTour = async (req, res) => {
   }
 };
 
+//* Aliasing
+//If we want to get for example top 5 tours, and we don't want user to type all the neccassary params
+//in the URl, we can predefined what has to be filtered, sorted, gte all and make it easier for the user
+
+//a middleware which will add all the params inbehalf of the user (prefilling query string for user)
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  // req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 exports.getTours = async (req, res) => {
   // console.log(req.query);
   // 1) normal filter way using params
@@ -79,6 +91,7 @@ exports.getTours = async (req, res) => {
       //return every item exept the version number, include90 a '-' in front
       query = query.select('-__v');
     }
+    // TODO: need to debug feilds properly
 
     //* 4) Pagination
     const page = req.query.page * 1 || 1;
@@ -87,7 +100,7 @@ exports.getTours = async (req, res) => {
 
     query = query.skip(skip).limit(limit);
 
-    //if we request more data in pagination compared to what we have
+    //if we request more data in pagination compared to what we have (?page=2&limit=3)
     if (req.query.page) {
       //countDocuments return number of documents in a collection
       const numTours = await Tour.countDocuments();

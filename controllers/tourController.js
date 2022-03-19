@@ -73,11 +73,25 @@ exports.getTours = async (req, res) => {
     if (req.query.fields) {
       //mongodb expects something like query.select)('name price duration') with spaces
       const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
-      console.log(query);
+      console.log(fields);
+      query.select(fields);
     } else {
-      //return every item exept the version number, include a '-' in front
-      query = query.sort('-__v');
+      //return every item exept the version number, include90 a '-' in front
+      query = query.select('-__v');
+    }
+
+    //* 4) Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    //if we request more data in pagination compared to what we have
+    if (req.query.page) {
+      //countDocuments return number of documents in a collection
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error('This page does not exist');
     }
 
     //EXECUTE QUERY

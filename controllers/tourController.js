@@ -109,7 +109,6 @@ exports.getTours = async (req, res) => {
 
     //EXECUTE QUERY
     const Tours = await query;
-    console.log(Tours);
     res.status(200).json({
       status: 'success',
       results: Tours.length,
